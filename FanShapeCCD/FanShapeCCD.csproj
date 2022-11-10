@@ -1,0 +1,39 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net6.0-windows</TargetFramework>
+    <Platforms>x64;x86</Platforms>
+    <Version>4.2.0</Version>
+  </PropertyGroup>
+
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
+      <DefineConstants>DEBUG;TRACE</DefineConstants>
+      <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
+      <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+    </PropertyGroup>
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="xcopy /e /y /i &quot;$(ProjectDir)Resources\*.*&quot; &quot;$(TargetDir)&quot;&#xA;xcopy /e /y /i &quot;$(FK_CORE22_DIR)\dll\$(PlatformName)\*.dll&quot; &quot;$(TargetDir)&quot;&#xD;&#xA;xcopy /e /y /i &quot;$(FK_CORE22_DIR)\data\fk_font&quot; &quot;$(TargetDir)fk_font&quot;" />
+  </Target>
+  <ItemGroup>
+    <Reference Include="FK_Core">
+      <HintPath>$(FK_CORE22_DIR)\bin\$(PlatformName)\FK_Core.dll</HintPath>
+    </Reference>
+    <Reference Include="FK_Audio_Core">
+      <HintPath>$(FK_CORE22_DIR)\bin\$(PlatformName)\FK_Audio_Core.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>
