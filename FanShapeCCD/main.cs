@@ -22,7 +22,7 @@ models[4].Shape = cSphere;
 models[5].Shape = cSphere;
 
 fk_Vector A, B, C, D, P, Q;
-A = new fk_Vector(-10.0, -10.0, 0.0);
+A = new fk_Vector(-10.0, -10.0, 10.0);
 B = new fk_Vector(10.0, 10.0, 0.0);
 C = new fk_Vector(-10.0, 10.0, 0.0);
 D = new fk_Vector(10.0, -10.0, 0.0);
