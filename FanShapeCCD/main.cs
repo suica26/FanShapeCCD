@@ -66,6 +66,7 @@ WindowSetup();
 win.Entry(lAB);
 win.Entry(lCD);
 
+
 while (win.Update() == true)
 {
     if (win.GetSpecialKeyStatus(fk_Key.UP)) A.y += 0.1;
@@ -84,6 +85,7 @@ while (win.Update() == true)
 }
 
 /////////////////////////////////////////////////////////////////////////////////
+//関数定義
 
 //ウィンドウ設定
 void WindowSetup()
