@@ -42,6 +42,28 @@ namespace FanShapeCCD
 
         public MyAABB() :base() { width = new fk_Vector(); }
         public MyAABB(fk_Vector p, fk_Vector w) : base(p) { width = new fk_Vector(w.x, w.y, w.z); }
+
+        public double GetMaxVal(fk_Axis axis)
+        {
+            switch (axis)
+            {
+                case fk_Axis.X: return position.x + width.x;
+                case fk_Axis.Y: return position.y + width.y;
+                case fk_Axis.Z: return position.z + width.z;
+                default: Console.WriteLine("Please select 1 axis"); return 0.0;
+            }
+        }
+
+        public double GetMinVal(fk_Axis axis)
+        {
+            switch (axis)
+            {
+                case fk_Axis.X: return position.x - width.x;
+                case fk_Axis.Y: return position.y - width.y;
+                case fk_Axis.Z: return position.z - width.z;
+                default: Console.WriteLine("Please select 1 axis"); return 0.0;
+            }
+        }
     }
 
     public class MyOBB : MyBoundingVolume
