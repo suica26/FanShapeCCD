@@ -7,6 +7,7 @@ namespace FanShapeCCD
     {
         static public double CalcPointLineDist(fk_Vector P, fk_Vector LP, fk_Vector V, ref fk_Vector H, ref double t)
         {
+
             //媒介変数の計算
             t = (V * P - V * LP) / (V * V);
             //直線状の点

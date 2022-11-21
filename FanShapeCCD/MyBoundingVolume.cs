@@ -3,7 +3,7 @@ using System;
 
 namespace FanShapeCCD
 {
-    public class MyBoundingVolume
+    public abstract class MyBoundingVolume
     {
         public fk_Vector position;
 
@@ -23,12 +23,14 @@ namespace FanShapeCCD
         public MySphereBV(fk_Vector p, double r) : base(p) { rad = r; }
     }
 
-    public class MyCapsuleBV : MySphereBV
+    public class MyCapsuleBV : MyBoundingVolume
     {
+        public double rad;
         public fk_Vector start, end;
         public MyCapsuleBV() : base() { start = new fk_Vector(); end = new fk_Vector(); }
-        public MyCapsuleBV(fk_Vector p, fk_Vector s, fk_Vector e, double r) : base(p, r)
+        public MyCapsuleBV(fk_Vector p, fk_Vector s, fk_Vector e, double r) : base(p)
         {
+            rad = r;
             start = new fk_Vector(s.x, s.y, s.z);
             end = new fk_Vector(e.x, e.y, e.z);
         }
@@ -42,13 +44,17 @@ namespace FanShapeCCD
         public MyAABB(fk_Vector p, fk_Vector w) : base(p) { width = new fk_Vector(w.x, w.y, w.z); }
     }
 
-    public class MyOBB : MyAABB
+    public class MyOBB : MyBoundingVolume
     {
+        public fk_Vector width;
         protected fk_Vector[] localAxis;
 
         public MyOBB() : base() { SetAxis(new fk_Vector(), new fk_Vector(), new fk_Vector()); }
-        public MyOBB(fk_Vector p, fk_Vector axisX, fk_Vector axisY, fk_Vector axisZ, fk_Vector w) : base(p, w) 
-        { SetAxis(axisX, axisY, axisZ); }
+        public MyOBB(fk_Vector p, fk_Vector axisX, fk_Vector axisY, fk_Vector axisZ, fk_Vector w) : base(p) 
+        {
+            width = new fk_Vector(w.x, w.y, w.z);
+            SetAxis(axisX, axisY, axisZ); 
+        }
 
         public fk_Vector GetAxis(fk_Axis axis)
         {
@@ -75,7 +81,8 @@ namespace FanShapeCCD
             localAxis[1].Set(lY.x, lY.y, lY.z);
             localAxis[2].Set(lZ.x, lZ.y, lZ.z);
 
-            for (int i = 0; i < 3; i++) localAxis[i].Normalize();
+            for (int i = 0; i < 3; i++)
+                if (!localAxis[i].Normalize()) Console.WriteLine($"Zero Vector is seted to OBB's Axis{i}");
         }
     }
 

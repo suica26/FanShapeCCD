@@ -1,7 +1,7 @@
-﻿using FanShapeCCD;
-using FK_CLI;
+﻿using FK_CLI;
 using System;
 using System.Collections.Generic;
+using FanShapeCCD;
 
 //ウィンドウ変数
 fk_AppWindow win = new fk_AppWindow();
@@ -65,7 +65,6 @@ WindowSetup();
 
 win.Entry(lAB);
 win.Entry(lCD);
-
 
 while (win.Update() == true)
 {
