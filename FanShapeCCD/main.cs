@@ -78,7 +78,7 @@ while (win.Update() == true)
     CD.SetVertex(0, C);
     CD.SetVertex(1, D);
 
-    DistCalc.CalcSegmentSegmentDist(A, B, C, D, ref P, ref Q, ref s, ref t);
+    DistanceCalculation.CalcSegmentSegmentDist(A, B, C, D, ref P, ref Q, ref s, ref t);
     models[4].GlMoveTo(P);
     models[5].GlMoveTo(Q);
 }

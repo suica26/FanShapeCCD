@@ -1,52 +1,51 @@
 ﻿using FK_CLI;
 using System;
 using System.Collections.Generic;
-using System.Xml.Serialization;
 
 namespace FanShapeCCD
 {
-    static public class GetCrossPoints2D
+    static public class CrossPointsCalculation2D
     {
         static public class SameShape
         {
-            static public fk_Vector LineLine()
+            static public fk_Vector Line_Line()
             {
                 return null;
             }
 
-            static public fk_Vector SegmentSegment()
+            static public fk_Vector Segment_Segment()
             {
                 return null;
             }
 
-            static public List<fk_Vector> CircleCircle()
+            static public List<fk_Vector> Circle_Circle()
             {
                 return null;
             }
 
-            static public List<fk_Vector> BoxBox()
+            static public List<fk_Vector> Box_Box()
             {
                 return null;
             }
         }
         static public class OtherShape
         {
-            static public List<fk_Vector> LineCircle()
+            static public List<fk_Vector> Line_Circle()
             {
                 return null;
             }
 
-            static public List<fk_Vector> SegmentCircle()
+            static public List<fk_Vector> Segment_Circle()
             {
                 return null;
             }
 
-            static public List<fk_Vector> FanshapeBox()
+            static public List<fk_Vector> FanShape_Box()
             {
                 return null;
             }
 
-            static public List<fk_Vector> FanshapeCircle()
+            static public List<fk_Vector> FanShape_Circle()
             {
                 return null;
             }

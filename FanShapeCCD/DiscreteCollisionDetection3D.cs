@@ -7,7 +7,7 @@ namespace FanShapeCCD
     {
         static public class SameBV
         {
-            static public bool SphereSphere(MySphereBV sphere1, MySphereBV sphere2)
+            static public bool Sphere_Sphere(MySphereBV sphere1, MySphereBV sphere2)
             {
                 double dist = (sphere1.position - sphere2.position).Dist();
                 double sumRad = sphere1.rad + sphere2.rad;
@@ -16,9 +16,9 @@ namespace FanShapeCCD
                 return true;
             }
 
-            static public bool CapsuleCapsule(MyCapsuleBV capsule1, MyCapsuleBV capsule2)
+            static public bool Capsule_Capsule(MyCapsuleBV capsule1, MyCapsuleBV capsule2)
             {
-                double dist = DistCalc.SegmentSegment(capsule1.start, capsule1.end, capsule2.start, capsule2.end);
+                double dist = DistanceCalculation.Segment_Segment(capsule1.start, capsule1.end, capsule2.start, capsule2.end);
                 double sumRad = capsule1.rad + capsule2.rad;
 
                 if (dist > sumRad) return false;
@@ -26,7 +26,7 @@ namespace FanShapeCCD
                 return true;
             }
 
-            static public bool AABBAABB(MyAABB aabb1, MyAABB aabb2)
+            static public bool AABB_AABB(MyAABB aabb1, MyAABB aabb2)
             {
                 if (aabb1.GetMinVal(fk_Axis.X) > aabb2.GetMaxVal(fk_Axis.X)) return false;
                 if (aabb1.GetMaxVal(fk_Axis.X) < aabb2.GetMinVal(fk_Axis.X)) return false;
@@ -38,12 +38,12 @@ namespace FanShapeCCD
                 return true;
             }
 
-            static public bool OBBOBB(MyOBB obb1, MyOBB obb2)
+            static public bool OBB_OBB(MyOBB obb1, MyOBB obb2)
             {
                 return true;
             }
 
-            static public bool FanShapeFanShape(MyFanShapeBV fanshape1, MyFanShapeBV fanshpae2)
+            static public bool FanShape_FanShape(MyFanShapeBV fanShape1, MyFanShapeBV fanShpae2)
             {
                 return true;
             }
@@ -51,52 +51,52 @@ namespace FanShapeCCD
 
         static public class OtherBV
         {
-            static public bool SphereCapsule(MySphereBV sphere, MyCapsuleBV capsule)
+            static public bool Sphere_Capsule(MySphereBV sphere, MyCapsuleBV capsule)
             {
                 return true;
             }
 
-            static public bool SphereAABB(MySphereBV sphere, MyAABB aabb)
+            static public bool Sphere_AABB(MySphereBV sphere, MyAABB aabb)
             {
                 return true;
             }
 
-            static public bool SphereOBB(MySphereBV sphere, MyOBB obb)
+            static public bool Sphere_OBB(MySphereBV sphere, MyOBB obb)
             {
                 return true;
             }
 
-            static public bool SphereFanShape(MySphereBV sphere, MyFanShapeBV fanshape)
+            static public bool Sphere_FanShape(MySphereBV sphere, MyFanShapeBV fanShape)
             {
                 return true;
             }
 
-            static public bool CapsuleAABB(MyCapsuleBV capsule, MyAABB aabb)
+            static public bool Capsule_AABB(MyCapsuleBV capsule, MyAABB aabb)
             {
                 return true;
             }
 
-            static public bool CapsuleOBB(MyCapsuleBV capsule, MyOBB obb)
+            static public bool Capsule_OBB(MyCapsuleBV capsule, MyOBB obb)
             {
                 return true;
             }
 
-            static public bool CapsuleFanShape(MyCapsuleBV capsule, MyFanShapeBV fanshape)
+            static public bool Capsule_FanShape(MyCapsuleBV capsule, MyFanShapeBV fanShape)
             {
                 return true;
             }
 
-            static public bool AABBOBB(MyAABB aabb, MyOBB obb)
+            static public bool AABB_OBB(MyAABB aabb, MyOBB obb)
             {
                 return true;
             }
 
-            static public bool AABBFanShape(MyAABB aabb, MyFanShapeBV fanshape)
+            static public bool AABB_FanShape(MyAABB aabb, MyFanShapeBV fanShape)
             {
                 return true;
             }
 
-            static public bool OBBFanShape(MyOBB obb, MyFanShapeBV fanshape)
+            static public bool OBB_FanShape(MyOBB obb, MyFanShapeBV fanShape)
             {
                 return true;
             }
