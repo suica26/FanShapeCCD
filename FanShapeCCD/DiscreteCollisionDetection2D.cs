@@ -50,17 +50,32 @@ namespace FanShapeCCD
                 fk_Vector BX = nBX * obb2.width.x;
                 fk_Vector BY = nBY * obb2.width.y;
 
-                double hlA, hlB;
-                double interval = (obb1.position - obb2.position).Dist();
+                double hlA, hlB, l;
+                fk_Vector interval = obb1.position - obb2.position;
 
                 //分離軸はnAX
                 hlA = obb1.width.x;
                 hlB = Math.Abs(nAX * BX) + Math.Abs(nAX * BY);
-                if (interval >= hlA + hlB) return false;
+                l = interval * nAX;
+                if (l >= hlA + hlB) return false;
 
                 //分離軸はnAY
+                hlA = obb1.width.y;
+                hlB = Math.Abs(nAY * BX) + Math.Abs(nAY * BY);
+                l = interval * nAY;
+                if (l >= hlA + hlB) return false;
+
                 //分離軸はnBX
+                hlA = Math.Abs(nBX * AX) + Math.Abs(nBX * AY);
+                hlB = obb2.width.x;
+                l = interval * nBX;
+                if (l >= hlA + hlB) return false;
+
                 //分離軸はnBY
+                hlA = Math.Abs(nBY * AX) + Math.Abs(nBY * AY);
+                hlB = obb2.width.y;
+                l = interval * nBY;
+                if (l >= hlA + hlB) return false;
 
                 return true;
             }
