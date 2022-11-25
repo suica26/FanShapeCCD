@@ -1,7 +1,7 @@
-﻿using FanShapeCCD;
-using FK_CLI;
+﻿using FK_CLI;
 using System;
 using System.Collections.Generic;
+using FanShapeCCD;
 
 //ウィンドウ変数
 fk_AppWindow win = new fk_AppWindow();
@@ -78,12 +78,13 @@ while (win.Update() == true)
     CD.SetVertex(0, C);
     CD.SetVertex(1, D);
 
-    DistCalc.CalcSegmentSegmentDist(A, B, C, D, ref P, ref Q, ref s, ref t);
+    DistanceCalculation.Segment_Segment(A, B, C, D, ref P, ref Q, ref s, ref t);
     models[4].GlMoveTo(P);
     models[5].GlMoveTo(Q);
 }
 
 /////////////////////////////////////////////////////////////////////////////////
+//関数定義
 
 //ウィンドウ設定
 void WindowSetup()
