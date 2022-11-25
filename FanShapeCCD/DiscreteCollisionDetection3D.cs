@@ -210,6 +210,128 @@ namespace FanShapeCCD
 
             static public bool AABB_OBB(MyAABB aabb, MyOBB obb)
             {
+
+                fk_Vector nAX = new fk_Vector(1.0, 0.0, 0.0);
+                fk_Vector nAY = new fk_Vector(0.0, 1.0, 0.0);
+                fk_Vector nAZ = new fk_Vector(0.0, 0.0, 1.0);
+                fk_Vector nBX = obb.GetAxis(fk_Axis.X);
+                fk_Vector nBY = obb.GetAxis(fk_Axis.Y);
+                fk_Vector nBZ = obb.GetAxis(fk_Axis.Z);
+
+                //幅の大きさに対応した軸を計算
+                fk_Vector AX = nAX * aabb.width.x;
+                fk_Vector AY = nAY * aabb.width.y;
+                fk_Vector AZ = nAZ * aabb.width.z;
+                fk_Vector BX = nBX * obb.width.x;
+                fk_Vector BY = nBY * obb.width.y;
+                fk_Vector BZ = nBZ * obb.width.z;
+
+                double hlA, hlB, l;
+                fk_Vector interval = aabb.position - obb.position;
+
+                //分離軸はnAX
+                hlA = aabb.width.x;
+                hlB = Math.Abs(nAX * BX) + Math.Abs(nAX * BY) + Math.Abs(nAX * BZ);
+                l = Math.Abs(interval * nAX);
+                if (l >= hlA + hlB) return false;
+
+                //分離軸はnAY
+                hlA = aabb.width.y;
+                hlB = Math.Abs(nAY * BX) + Math.Abs(nAY * BY) + Math.Abs(nAY * BZ);
+                l = Math.Abs(interval * nAY);
+                if (l >= hlA + hlB) return false;
+
+                //分離軸はnAZ
+                hlA = aabb.width.z;
+                hlB = Math.Abs(nAZ * BX) + Math.Abs(nAZ * BY) + Math.Abs(nAZ * BZ);
+                l = Math.Abs(interval * nAZ);
+                if (l >= hlA + hlB) return false;
+
+                //分離軸はnBX
+                hlA = Math.Abs(nBX * AX) + Math.Abs(nBX * AY) + Math.Abs(nBX * AZ);
+                hlB = obb.width.x;
+                l = Math.Abs(interval * nBX);
+                if (l >= hlA + hlB) return false;
+
+                //分離軸はnBY
+                hlA = Math.Abs(nBY * AX) + Math.Abs(nBY * AY) + Math.Abs(nBY * AZ);
+                hlB = obb.width.y;
+                l = Math.Abs(interval * nBY);
+                if (l >= hlA + hlB) return false;
+
+                //分離軸はnBZ
+                hlA = Math.Abs(nBZ * AX) + Math.Abs(nBZ * AY) + Math.Abs(nBZ * AZ);
+                hlB = obb.width.z;
+                l = Math.Abs(interval * nBZ);
+                if (l >= hlA + hlB) return false;
+
+                //外積分離軸
+                //直訳： Cross Separating Axis
+                fk_Vector CSA;
+
+                //分離軸は nAX ^ nBX
+                CSA = nAX ^ nBX;
+                hlA = Math.Abs(CSA * AY) + Math.Abs(CSA * AZ);
+                hlB = Math.Abs(CSA * BY) + Math.Abs(CSA * BZ);
+                l = Math.Abs(interval * CSA);
+                if (l >= hlA + hlB) return false;
+
+                //分離軸は nAX ^ nBY
+                CSA = nAX ^ nBY;
+                hlA = Math.Abs(CSA * AY) + Math.Abs(CSA * AZ);
+                hlB = Math.Abs(CSA * BX) + Math.Abs(CSA * BZ);
+                l = Math.Abs(interval * CSA);
+                if (l >= hlA + hlB) return false;
+
+                //分離軸は nAX ^ nBZ
+                CSA = nAX ^ nBZ;
+                hlA = Math.Abs(CSA * AY) + Math.Abs(CSA * AZ);
+                hlB = Math.Abs(CSA * BX) + Math.Abs(CSA * BY);
+                l = Math.Abs(interval * CSA);
+                if (l >= hlA + hlB) return false;
+
+                //分離軸は nAY ^ nBX
+                CSA = nAY ^ nBX;
+                hlA = Math.Abs(CSA * AX) + Math.Abs(CSA * AZ);
+                hlB = Math.Abs(CSA * BY) + Math.Abs(CSA * BZ);
+                l = Math.Abs(interval * CSA);
+                if (l >= hlA + hlB) return false;
+
+                //分離軸は nAY ^ nBY
+                CSA = nAY ^ nBY;
+                hlA = Math.Abs(CSA * AX) + Math.Abs(CSA * AZ);
+                hlB = Math.Abs(CSA * BX) + Math.Abs(CSA * BZ);
+                l = Math.Abs(interval * CSA);
+                if (l >= hlA + hlB) return false;
+
+                //分離軸は nAY ^ nBZ
+                CSA = nAY ^ nBZ;
+                hlA = Math.Abs(CSA * AX) + Math.Abs(CSA * AZ);
+                hlB = Math.Abs(CSA * BX) + Math.Abs(CSA * BY);
+                l = Math.Abs(interval * CSA);
+                if (l >= hlA + hlB) return false;
+
+                //分離軸は nAZ ^ nBX
+                CSA = nAZ ^ nBX;
+                hlA = Math.Abs(CSA * AX) + Math.Abs(CSA * AY);
+                hlB = Math.Abs(CSA * BY) + Math.Abs(CSA * BZ);
+                l = Math.Abs(interval * CSA);
+                if (l >= hlA + hlB) return false;
+
+                //分離軸は nAZ ^ nBY
+                CSA = nAZ ^ nBY;
+                hlA = Math.Abs(CSA * AX) + Math.Abs(CSA * AY);
+                hlB = Math.Abs(CSA * BX) + Math.Abs(CSA * BZ);
+                l = Math.Abs(interval * CSA);
+                if (l >= hlA + hlB) return false;
+
+                //分離軸は nAZ ^ nBZ
+                CSA = nAZ ^ nBZ;
+                hlA = Math.Abs(CSA * AX) + Math.Abs(CSA * AY);
+                hlB = Math.Abs(CSA * BX) + Math.Abs(CSA * BY);
+                l = Math.Abs(interval * CSA);
+                if (l >= hlA + hlB) return false;
+
                 return true;
             }
 

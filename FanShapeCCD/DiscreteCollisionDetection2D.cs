@@ -125,6 +125,45 @@ namespace FanShapeCCD
 
             static public bool AABB_OBB(MyAABB aabb, MyOBB obb)
             {
+                //obbの各軸を取得
+                fk_Vector nAX = new fk_Vector(1.0, 0.0, 0.0);
+                fk_Vector nAY = new fk_Vector(0.0, 1.0, 0.0);
+                fk_Vector nBX = obb.GetAxis(fk_Axis.X);
+                fk_Vector nBY = obb.GetAxis(fk_Axis.Y);
+
+                //幅の大きさに対応した軸を計算
+                fk_Vector AX = nAX * aabb.width.x;
+                fk_Vector AY = nAY * aabb.width.y;
+                fk_Vector BX = nBX * obb.width.x;
+                fk_Vector BY = nBY * obb.width.y;
+
+                double hlA, hlB, l;
+                fk_Vector interval = aabb.position - obb.position;
+
+                //分離軸はnAX
+                hlA = aabb.width.x;
+                hlB = Math.Abs(nAX * BX) + Math.Abs(nAX * BY);
+                l = interval * nAX;
+                if (l >= hlA + hlB) return false;
+
+                //分離軸はnAY
+                hlA = aabb.width.y;
+                hlB = Math.Abs(nAY * BX) + Math.Abs(nAY * BY);
+                l = interval * nAY;
+                if (l >= hlA + hlB) return false;
+
+                //分離軸はnBX
+                hlA = Math.Abs(nBX * AX) + Math.Abs(nBX * AY);
+                hlB = obb.width.x;
+                l = interval * nBX;
+                if (l >= hlA + hlB) return false;
+
+                //分離軸はnBY
+                hlA = Math.Abs(nBY * AX) + Math.Abs(nBY * AY);
+                hlB = obb.width.y;
+                l = interval * nBY;
+                if (l >= hlA + hlB) return false;
+
                 return true;
             }
 
