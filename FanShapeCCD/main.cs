@@ -9,15 +9,15 @@ WindowSetup();
 
 var model = new fk_Model();
 var obbBV = new MyOBB(new fk_Vector(), new fk_Vector(1.0, 0.0, 0.0), new fk_Vector(0.0, 1.0, 0.0), new fk_Vector(0.0, 0.0, 1.0), new fk_Vector(10.0, 10.0, 20.0));
+var fanshapeBV = new MyFanShapeBV(new fk_Vector(), new fk_Vector(1.0, 0.0, 0.0), new fk_Vector(0.0, 1.0, 0.0), Math.PI * 60.0 / 180.0, 10.0, 20.0, 5.0);
 
 var block = new fk_Block(10.0, 10.0, 20.0);
 var obb = obbBV.GetShape();
 
 model.Shape = block;
 model.Material = fk_Material.Yellow;
-model.Material.Alpha = 0.1f;
+model.DrawMode = fk_Draw.LINE;
 win.Entry(model);
-
 
 const int POINTNUM = 1000;
 var pointModel = new fk_Model[POINTNUM];
@@ -66,15 +66,16 @@ while (win.Update() == true)
         model.LoRotateWithVec(new fk_Vector(), fk_Axis.Z, -0.01);
     }
     obbBV.SyncModel(model);
+    fanshapeBV.SyncModel(model);
 
     for(int i = 0; i < pointArray.Length; i++)
     {
-        if (obbBV.PointInOutCheck(pointArray[i])) pointModel[i].PointColor = red;
+        if (fanshapeBV.PointInOutCheck(pointArray[i])) pointModel[i].PointColor = red;
         else pointModel[i].PointColor = black;
     }
 
-    if ((count++ / 120) % 2 == 0) model.Shape = obb;
-    else model.Shape = block;
+    //if ((count++ / 120) % 2 == 0) model.Shape = obb;
+    //else model.Shape = block;
 }
 
 /////////////////////////////////////////////////////////////////////////////////

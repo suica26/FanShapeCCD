@@ -218,11 +218,40 @@ namespace FanShapeCCD
 
         override public void SyncModel(fk_Model argModel)
         {
-            base.SyncModel(argModel);
+            var p = argModel.Position;
+            origin.Set(p.x, p.y, p.z);
+            var v = argModel.Vec;
+            center.Set(v.x, v.y, v.z);
+            var u = argModel.Upvec;
+            upVec.Set(u.x, u.y, u.z);
+            position = origin + center * (sRad + (lRad + sRad) / 2.0);
         }
 
         public override bool PointInOutCheck(fk_Vector point)
         {
+            var p = new fk_Vector(point.x, point.y, point.z);
+            fk_Vector pVec;
+
+            //三次元の判定
+            if(height != 0.0)
+            {
+                //平面までの距離を計算
+                pVec = p - origin;
+                double planeDist = upVec * pVec;
+                if (Math.Abs(planeDist) > height) return false;
+                //扇形内部にあるなら、点Pを平面に投影
+                else p += upVec * planeDist;
+            }
+
+            //二次元判定
+            //距離比較
+            pVec = p - origin;
+            double dist = pVec.Dist();
+            if (dist < sRad || dist > lRad) return false;
+            //方向比較
+            pVec.Normalize();
+            if(cosVal > pVec * center) return false;
+
             return true;
         }
     }
