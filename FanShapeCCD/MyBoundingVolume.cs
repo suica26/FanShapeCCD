@@ -1,7 +1,6 @@
 ﻿using FK_CLI;
 using System;
 using System.Runtime.CompilerServices;
-using System.Security.Cryptography.X509Certificates;
 
 namespace FanShapeCCD
 {
@@ -13,7 +12,13 @@ namespace FanShapeCCD
         public MyBoundingVolume(fk_Vector p) { position = new fk_Vector(p.x, p.y, p.z); }
 
         abstract public fk_Shape GetShape();
-        virtual public void SyncModel(fk_Model argModel) { }
+        virtual public void SyncModel(fk_Model argModel) 
+        {
+            var p = argModel.Position;
+            position.Set(p.x, p.y, p.z);
+        }
+
+        abstract public bool PointInOutCheck(fk_Vector point);
     }
 
     public class MySphereBV : MyBoundingVolume
@@ -27,8 +32,16 @@ namespace FanShapeCCD
         public MySphereBV() : base() { rad = 0.0; }
         public MySphereBV(fk_Vector p, double r) : base(p) { rad = r; }
 
-        public override fk_Shape GetShape() { return new fk_Sphere(8, rad); }
-        public override void SyncModel(fk_Model argModel) { base.SyncModel(argModel); }
+        override public fk_Shape GetShape() { return new fk_Sphere(8, rad); }
+
+        override public void SyncModel(fk_Model argModel) { base.SyncModel(argModel); }
+
+        public override bool PointInOutCheck(fk_Vector point)
+        {
+            double dist = (position - point).Dist();
+            if (dist > rad) return false;
+            return true;
+        }
     }
 
     public class MyCapsuleBV : MyBoundingVolume
@@ -45,14 +58,21 @@ namespace FanShapeCCD
             position = start + (end - start) / 2;
         }
 
-        public override fk_Shape GetShape() { return new fk_Capsule(8, (start - end).Dist(), rad); }
+        override public fk_Shape GetShape() { return new fk_Capsule(8, (start - end).Dist(), rad); }
 
-        public override void SyncModel(fk_Model argModel)
+        override public void SyncModel(fk_Model argModel)
         {
             base.SyncModel(argModel);
             double len = (end - start).Dist() / 2;
             start = position + argModel.Vec * len;
             end = position - argModel.Vec * len;
+        }
+
+        public override bool PointInOutCheck(fk_Vector point)
+        {
+            double dist = DistanceCalculation.Point_Segment(point, start, end);
+            if (dist > rad) return false;
+            return true;
         }
     }
 
@@ -63,9 +83,17 @@ namespace FanShapeCCD
         public MyAABB() : base() { width = new fk_Vector(); }
         public MyAABB(fk_Vector p, fk_Vector w) : base(p) { width = new fk_Vector(w.x, w.y, w.z); }
 
-        public override fk_Shape GetShape() { return new fk_Block(width.x, width.x, width.z); }
+        override public fk_Shape GetShape() { return new fk_Block(width.x, width.x, width.z); }
 
-        public override void SyncModel(fk_Model argModel) { base.SyncModel(argModel); }
+        override public void SyncModel(fk_Model argModel) { base.SyncModel(argModel); }
+
+        public override bool PointInOutCheck(fk_Vector point)
+        {
+            if (GetMaxVal(fk_Axis.X) < point.x || GetMinVal(fk_Axis.X) > point.x) return false;
+            if (GetMaxVal(fk_Axis.Y) < point.y || GetMinVal(fk_Axis.Y) > point.y) return false;
+            if (GetMaxVal(fk_Axis.Z) < point.z || GetMinVal(fk_Axis.Z) > point.z) return false;
+            return true;
+        }
 
         public double GetMaxVal(fk_Axis axis)
         {
@@ -114,12 +142,21 @@ namespace FanShapeCCD
             SetAxis(axisX, axisY, axisZ);
         }
 
-        public override fk_Shape GetShape() { return new fk_Block(width.x, width.y, width.z); }
+        override public fk_Shape GetShape() { return new fk_Block(width.x, width.y, width.z); }
 
-        public override void SyncModel(fk_Model argModel)
+        override public void SyncModel(fk_Model argModel)
         {
             base.SyncModel(argModel);
             SetAxis(argModel.Vec ^ argModel.Upvec, argModel.Upvec, argModel.Vec);
+        }
+
+        public override bool PointInOutCheck(fk_Vector point)
+        {
+            fk_Vector pVec = point - position;
+            if (Math.Abs(GetAxis(fk_Axis.X) * pVec) > width.x / 2.0) return false;
+            if (Math.Abs(GetAxis(fk_Axis.Y) * pVec) > width.y / 2.0) return false;
+            if (Math.Abs(GetAxis(fk_Axis.Z) * pVec) > width.z / 2.0) return false;
+            return true;
         }
 
         public fk_Vector GetAxis(fk_Axis axis)
@@ -153,20 +190,20 @@ namespace FanShapeCCD
     public class MyFanShapeBV : MyBoundingVolume
     {
         public fk_Vector origin; //同心円(球)の中心点
-        public fk_Vector centerAxis; //扇形の中心軸
+        public fk_Vector center; //扇形の中心軸
         public fk_Vector upVec; //3次元用　厚み方向の単位ベクトル
         public double cosVal;   //半角のコサイン値
         public double sRad, lRad, height;    //内円(球)半径、外円(球)半径、厚み
 
         public MyFanShapeBV() : base()
         {
-            centerAxis = upVec = origin = new fk_Vector();
+            center = upVec = origin = new fk_Vector();
             cosVal = sRad = lRad = height = 0.0;
         }
         public MyFanShapeBV(fk_Vector O, fk_Vector A, fk_Vector U, double theta, double s, double l, double h)
         {
             origin = new fk_Vector(O.x, O.y, O.z);
-            centerAxis = new fk_Vector(A.x, A.y, A.z);
+            center = new fk_Vector(A.x, A.y, A.z);
             upVec = new fk_Vector(U.x, U.y, U.z);
             cosVal = Math.Cos(theta);
             sRad = s;
@@ -174,14 +211,19 @@ namespace FanShapeCCD
             height = h;
         }
 
-        public override fk_Shape GetShape()
+        override public fk_Shape GetShape()
         {
             return null;
         }
 
-        public override void SyncModel(fk_Model argModel)
+        override public void SyncModel(fk_Model argModel)
         {
             base.SyncModel(argModel);
+        }
+
+        public override bool PointInOutCheck(fk_Vector point)
+        {
+            return true;
         }
     }
 }

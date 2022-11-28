@@ -5,82 +5,76 @@ using FanShapeCCD;
 
 //ウィンドウ変数
 fk_AppWindow win = new fk_AppWindow();
-
-var models = new List<fk_Model>();
-var sphere = new fk_Sphere(8, 1.0);
-var cSphere = new fk_Sphere(8, 1.1);
-
-for (int i = 0; i < 6; i++)
-{
-    var model = new fk_Model();
-    model.Shape = sphere;
-    model.Material = fk_Material.Yellow;
-    models.Add(model);
-}
-
-models[4].Shape = cSphere;
-models[5].Shape = cSphere;
-
-fk_Vector A, B, C, D, P, Q;
-A = new fk_Vector(-10.0, -10.0, 10.0);
-B = new fk_Vector(10.0, 10.0, 0.0);
-C = new fk_Vector(-10.0, 10.0, 0.0);
-D = new fk_Vector(10.0, -10.0, 0.0);
-P = new fk_Vector(10.0, 0.0, 0.0);
-Q = new fk_Vector(-10.0, 0.0, 0.0);
-
-double s, t;
-s = t = 0.0;
-
-var AB = new fk_Line();
-AB.PushLine(A, B);
-var CD = new fk_Line();
-CD.PushLine(C, D);
-
-var lAB = new fk_Model();
-lAB.Shape = AB;
-lAB.LineColor = new fk_Color(1.0, 0.0, 0.0);
-lAB.LineWidth = 1.0;
-var lCD = new fk_Model();
-lCD.Shape = CD;
-lCD.LineColor = new fk_Color(0.0, 0.0, 1.0);
-lCD.LineWidth = 1.0;
-
-models[0].GlMoveTo(A);
-models[1].GlMoveTo(B);
-models[2].GlMoveTo(C);
-models[3].GlMoveTo(D);
-models[4].GlMoveTo(P);
-models[5].GlMoveTo(Q);
-
-models[4].Material = fk_Material.Red;
-models[5].Material = fk_Material.Blue;
-
-for (int i=0;i<6;i++)
-{
-    win.Entry(models[i]);
-}
-
 WindowSetup();
 
-win.Entry(lAB);
-win.Entry(lCD);
+var model = new fk_Model();
+var obbBV = new MyOBB(new fk_Vector(), new fk_Vector(1.0, 0.0, 0.0), new fk_Vector(0.0, 1.0, 0.0), new fk_Vector(0.0, 0.0, 1.0), new fk_Vector(10.0, 10.0, 20.0));
+
+var block = new fk_Block(10.0, 10.0, 20.0);
+var obb = obbBV.GetShape();
+
+model.Shape = block;
+model.Material = fk_Material.Yellow;
+model.Material.Alpha = 0.1f;
+win.Entry(model);
+
+
+const int POINTNUM = 1000;
+var pointModel = new fk_Model[POINTNUM];
+var point = new fk_Point[POINTNUM];
+var pointArray = new fk_Vector[POINTNUM];
+
+for(int i = 0; i < 10; i++)
+{
+    double x = i * 5.0 - 22.5;
+    for(int j = 0; j < 10; j++)
+    {
+        double y = j * 5.0 - 22.5;
+        for(int k = 0; k < 10; k++)
+        {
+            double z = k * 5.0 - 22.5;
+            int num = i * 100 + j * 10 + k;
+
+            pointArray[num] = new fk_Vector(x, y, z);
+            point[num] = new fk_Point();
+            point[num].PushVertex(pointArray[num]);
+
+            pointModel[num] = new fk_Model();
+            pointModel[num].Shape = point[num];
+            pointModel[num].PointSize = 10.0;
+            win.Entry(pointModel[num]);
+        }
+    }
+}
+
+int count = 0;
+var red = new fk_Color(1.0, 0.0, 0.0);
+var black = new fk_Color(0.0, 0.0, 0.0);
 
 while (win.Update() == true)
 {
-    if (win.GetSpecialKeyStatus(fk_Key.UP)) A.y += 0.1;
-    if (win.GetSpecialKeyStatus(fk_Key.DOWN)) A.y -= 0.1;
-    if (win.GetSpecialKeyStatus(fk_Key.LEFT)) A.x -= 0.1;
-    if (win.GetSpecialKeyStatus(fk_Key.RIGHT)) A.x += 0.1;
-    models[0].GlMoveTo(A);
-    AB.SetVertex(0, A);
-    AB.SetVertex(1, B);
-    CD.SetVertex(0, C);
-    CD.SetVertex(1, D);
+    if(win.GetKeyStatus(fk_Key.SHIFT_L))
+    {
+        model.LoRotateWithVec(new fk_Vector(), fk_Axis.Y, 0.01);
+        model.LoRotateWithVec(new fk_Vector(), fk_Axis.X, 0.01);
+        model.LoRotateWithVec(new fk_Vector(), fk_Axis.Z, 0.01);
+    }
+    else if(win.GetKeyStatus(fk_Key.CTRL_L))
+    {
+        model.LoRotateWithVec(new fk_Vector(), fk_Axis.Y, -0.01);
+        model.LoRotateWithVec(new fk_Vector(), fk_Axis.X, -0.01);
+        model.LoRotateWithVec(new fk_Vector(), fk_Axis.Z, -0.01);
+    }
+    obbBV.SyncModel(model);
 
-    DistanceCalculation.Segment_Segment(A, B, C, D, ref P, ref Q, ref s, ref t);
-    models[4].GlMoveTo(P);
-    models[5].GlMoveTo(Q);
+    for(int i = 0; i < pointArray.Length; i++)
+    {
+        if (obbBV.PointInOutCheck(pointArray[i])) pointModel[i].PointColor = red;
+        else pointModel[i].PointColor = black;
+    }
+
+    if ((count++ / 120) % 2 == 0) model.Shape = obb;
+    else model.Shape = block;
 }
 
 /////////////////////////////////////////////////////////////////////////////////
