@@ -1,103 +1,60 @@
 ﻿using FK_CLI;
 using System;
-using System.Collections.Generic;
 using FanShapeCCD;
 
 //ウィンドウ変数
 fk_AppWindow win = new fk_AppWindow();
 WindowSetup();
 
-var model = new fk_Model();
-var obbBV = new MyOBB(new fk_Vector(), new fk_Vector(1.0, 0.0, 0.0), new fk_Vector(0.0, 1.0, 0.0), new fk_Vector(0.0, 0.0, 1.0), new fk_Vector(10.0, 10.0, 20.0));
-var fanshapeBV = new MyFanShapeBV(new fk_Vector(), new fk_Vector(1.0, 0.0, 0.0), new fk_Vector(0.0, 1.0, 0.0), Math.PI * 120.0 / 180.0, 10.0, 20.0, 5.0);
+var origin = new fk_Vector();
+const double AXISLENGTH = 10.0;
 
-var block = new fk_Block(10.0, 10.0, 20.0);
-var obb = obbBV.GetShape();
+fk_Model[] axisModels = new fk_Model[3];
+fk_Line[] axisLines = new fk_Line[3];
 
-model.Shape = block;
-model.Material = fk_Material.Yellow;
-model.DrawMode = fk_Draw.LINE;
-win.Entry(model);
-
-const double ROUGHNESS = 64.0;
-const double STEP = 2.0 / ROUGHNESS;
-const double START = -1.0;
-var fanshapeModel = new fk_Model();
-var lineShape = new fk_Line();
-
-for (double t = START; t < 1.0; t += 2.0 / ROUGHNESS)
+for(int i=0; i<3; i++)
 {
-    var a = fanshapeBV.GetPoint(0.0, t, -1.0);
-    var b = fanshapeBV.GetPoint(1.0, t, -1.0);
-    var c = fanshapeBV.GetPoint(0.0, t, 1.0);
-    var d = fanshapeBV.GetPoint(1.0, t, 1.0);
+    axisModels[i] = new fk_Model();
+    axisLines[i] = new fk_Line();
+    axisModels[i].Shape = axisLines[i];
+    axisModels[i].LineWidth = 1.0;
 
-    lineShape.PushLine(a, b);
-    lineShape.PushLine(a, c);
-    lineShape.PushLine(b, d);
-    lineShape.PushLine(c, d);
-
-    if (t != START)
-    {
-        var pa = fanshapeBV.GetPoint(0.0, t - STEP, -1.0);
-        var pb = fanshapeBV.GetPoint(1.0, t - STEP, -1.0);
-        var pc = fanshapeBV.GetPoint(0.0, t - STEP, 1.0);
-        var pd = fanshapeBV.GetPoint(1.0, t - STEP, 1.0);
-        lineShape.PushLine(a, pa);
-        lineShape.PushLine(b, pb);
-        lineShape.PushLine(c, pc);
-        lineShape.PushLine(d, pd);
-    }
+    win.Entry(axisModels[i]);
 }
 
-fanshapeModel.Shape = lineShape;
-fanshapeModel.LineWidth = 10.0;
-fanshapeModel.LineColor = new fk_Color(1.0, 0.0, 0.0);
+axisModels[0].LineColor = new fk_Color(1.0, 0.0, 0.0);
+axisModels[1].LineColor = new fk_Color(0.0, 1.0, 0.0);
+axisModels[2].LineColor = new fk_Color(0.0, 0.0, 1.0);
+
+var fanshapeBV = new MyFanShapeBV(origin, new fk_Vector(1.0, 0.0, 0.0), new fk_Vector(0.0, 1.0, 0.0), Math.PI * 60.0 / 180.0, 10.0, 20.0, 5.0);
+
+var fanshapeModel = new fk_Model();
+fanshapeModel.Shape = fanshapeBV.GetShape();
+fanshapeModel.Material = fk_Material.Yellow;
+fanshapeModel.DrawMode = fk_Draw.LINE | fk_Draw.FACE;
 win.Entry(fanshapeModel);
 
 while (win.Update() == true)
 {
+    if(win.GetKeyStatus(fk_Key.TAB))
+    {
+        fanshapeModel.LoRotateWithVec(origin, fk_Axis.X, 0.01);
+    }
     if(win.GetKeyStatus(fk_Key.SHIFT_L))
     {
-        model.LoRotateWithVec(new fk_Vector(), fk_Axis.Y, 0.01);
-        model.LoRotateWithVec(new fk_Vector(), fk_Axis.X, 0.01);
-        model.LoRotateWithVec(new fk_Vector(), fk_Axis.Z, 0.01);
+        fanshapeModel.LoRotateWithVec(origin, fk_Axis.Y, 0.01);
     }
-    else if(win.GetKeyStatus(fk_Key.CTRL_L))
+    if(win.GetKeyStatus(fk_Key.CTRL_L))
     {
-        model.LoRotateWithVec(new fk_Vector(), fk_Axis.Y, -0.01);
-        model.LoRotateWithVec(new fk_Vector(), fk_Axis.X, -0.01);
-        model.LoRotateWithVec(new fk_Vector(), fk_Axis.Z, -0.01);
+        fanshapeModel.LoRotateWithVec(origin, fk_Axis.Z, 0.01);
     }
-    obbBV.SyncModel(model);
-    fanshapeBV.SyncModel(model);
 
-    lineShape.AllClear();
+    for (int i = 0; i < 3; i++) axisLines[i].AllClear();
+    axisLines[0].PushLine(origin, fanshapeModel.Vec ^ fanshapeModel.Upvec * AXISLENGTH);
+    axisLines[1].PushLine(origin, fanshapeModel.Upvec * AXISLENGTH);
+    axisLines[2].PushLine(origin, fanshapeModel.Vec * AXISLENGTH);
 
-    for (double t = START; t < 1.0; t += 2.0 / ROUGHNESS)
-    {
-        var a = fanshapeBV.GetPoint(0.0, t, -1.0);
-        var b = fanshapeBV.GetPoint(1.0, t, -1.0);
-        var c = fanshapeBV.GetPoint(0.0, t, 1.0);
-        var d = fanshapeBV.GetPoint(1.0, t, 1.0);
-
-        lineShape.PushLine(a, b);
-        lineShape.PushLine(a, c);
-        lineShape.PushLine(b, d);
-        lineShape.PushLine(c, d);
-
-        if (t != START)
-        {
-            var pa = fanshapeBV.GetPoint(0.0, t - STEP, -1.0);
-            var pb = fanshapeBV.GetPoint(1.0, t - STEP, -1.0);
-            var pc = fanshapeBV.GetPoint(0.0, t - STEP, 1.0);
-            var pd = fanshapeBV.GetPoint(1.0, t - STEP, 1.0);
-            lineShape.PushLine(a, pa);
-            lineShape.PushLine(b, pb);
-            lineShape.PushLine(c, pc);
-            lineShape.PushLine(d, pd);
-        }
-    }
+    fanshapeBV.SyncModel(fanshapeModel);
 }
 
 /////////////////////////////////////////////////////////////////////////////////

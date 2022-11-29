@@ -1,6 +1,5 @@
 ﻿using FK_CLI;
 using System;
-using System.Runtime.CompilerServices;
 
 namespace FanShapeCCD
 {
@@ -213,7 +212,58 @@ namespace FanShapeCCD
 
         public override fk_Shape GetShape()
         {
-            return null;
+            const int V_NUM = 32;
+            const double ROUGHNESS = V_NUM;
+
+            var ifs = new fk_IndexFaceSet();
+            var pos = new fk_Vector[4 * (V_NUM + 1)];
+            var IFSet = new int[4 * 4 * V_NUM + 8];
+
+            const double STEP = 2.0 / ROUGHNESS;
+            const double START = -1.0;
+
+            int i, j, index;
+
+            for (i = 0; i <= V_NUM; i++)
+            {
+                double t = START + STEP * i;
+                pos[i * 4] = GetPoint(0.0, t, 1.0);
+                pos[i * 4 + 1] = GetPoint(0.0, t, -1.0);
+                pos[i * 4 + 2] = GetPoint(1.0, t, -1.0);
+                pos[i * 4 + 3] = GetPoint(1.0, t, 1.0);
+            }
+
+            for (i = 0; i < V_NUM; i++)
+            {
+                for (j = 0; j < 4; j++)
+                {
+                    index = i * 16 + j * 4;
+                    IFSet[index] = 4 * i + j;
+                    IFSet[index + 1] = 4 * (i + 1) + j;
+                    if(j != 3)
+                    {
+                        IFSet[index + 2] = 4 * (i + 1) + j + 1;
+                        IFSet[index + 3] = 4 * i + j + 1;
+                    }
+                    else
+                    {
+                        IFSet[index + 2] = 4 * (i + 1);
+                        IFSet[index + 3] = 4 * i;
+                    }
+                }
+            }
+
+            index = i * 16;
+
+            for(i = 0; i < 4; i++)
+            {
+                IFSet[index + i] = i;
+                IFSet[index + i + 4] = pos.Length - i - 1;
+            }
+
+            ifs.MakeIFSet(4 * V_NUM + 2, 4, IFSet, 4 * (V_NUM + 1), pos);
+
+            return ifs;
         }
 
         public override void SyncModel(fk_Model argModel)
