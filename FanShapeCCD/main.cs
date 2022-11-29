@@ -1,86 +1,60 @@
 ﻿using FK_CLI;
 using System;
-using System.Collections.Generic;
 using FanShapeCCD;
 
 //ウィンドウ変数
 fk_AppWindow win = new fk_AppWindow();
-
-var models = new List<fk_Model>();
-var sphere = new fk_Sphere(8, 1.0);
-var cSphere = new fk_Sphere(8, 1.1);
-
-for (int i = 0; i < 6; i++)
-{
-    var model = new fk_Model();
-    model.Shape = sphere;
-    model.Material = fk_Material.Yellow;
-    models.Add(model);
-}
-
-models[4].Shape = cSphere;
-models[5].Shape = cSphere;
-
-fk_Vector A, B, C, D, P, Q;
-A = new fk_Vector(-10.0, -10.0, 10.0);
-B = new fk_Vector(10.0, 10.0, 0.0);
-C = new fk_Vector(-10.0, 10.0, 0.0);
-D = new fk_Vector(10.0, -10.0, 0.0);
-P = new fk_Vector(10.0, 0.0, 0.0);
-Q = new fk_Vector(-10.0, 0.0, 0.0);
-
-double s, t;
-s = t = 0.0;
-
-var AB = new fk_Line();
-AB.PushLine(A, B);
-var CD = new fk_Line();
-CD.PushLine(C, D);
-
-var lAB = new fk_Model();
-lAB.Shape = AB;
-lAB.LineColor = new fk_Color(1.0, 0.0, 0.0);
-lAB.LineWidth = 1.0;
-var lCD = new fk_Model();
-lCD.Shape = CD;
-lCD.LineColor = new fk_Color(0.0, 0.0, 1.0);
-lCD.LineWidth = 1.0;
-
-models[0].GlMoveTo(A);
-models[1].GlMoveTo(B);
-models[2].GlMoveTo(C);
-models[3].GlMoveTo(D);
-models[4].GlMoveTo(P);
-models[5].GlMoveTo(Q);
-
-models[4].Material = fk_Material.Red;
-models[5].Material = fk_Material.Blue;
-
-for (int i=0;i<6;i++)
-{
-    win.Entry(models[i]);
-}
-
 WindowSetup();
 
-win.Entry(lAB);
-win.Entry(lCD);
+var origin = new fk_Vector();
+const double AXISLENGTH = 10.0;
+
+fk_Model[] axisModels = new fk_Model[3];
+fk_Line[] axisLines = new fk_Line[3];
+
+for(int i=0; i<3; i++)
+{
+    axisModels[i] = new fk_Model();
+    axisLines[i] = new fk_Line();
+    axisModels[i].Shape = axisLines[i];
+    axisModels[i].LineWidth = 1.0;
+
+    win.Entry(axisModels[i]);
+}
+
+axisModels[0].LineColor = new fk_Color(1.0, 0.0, 0.0);
+axisModels[1].LineColor = new fk_Color(0.0, 1.0, 0.0);
+axisModels[2].LineColor = new fk_Color(0.0, 0.0, 1.0);
+
+var fanshapeBV = new MyFanShapeBV(origin, new fk_Vector(0.0, 1.0, 0.0), new fk_Vector(0.0, 0.0, 1.0), Math.PI * 60.0 / 180.0, 0.0, 20.0, 5.0);
+
+var fanshapeModel = new fk_Model();
+fanshapeModel.Shape = fanshapeBV.GetShape();
+fanshapeModel.Material = fk_Material.Yellow;
+fanshapeModel.DrawMode = fk_Draw.LINE | fk_Draw.FACE;
+win.Entry(fanshapeModel);
 
 while (win.Update() == true)
 {
-    if (win.GetSpecialKeyStatus(fk_Key.UP)) A.y += 0.1;
-    if (win.GetSpecialKeyStatus(fk_Key.DOWN)) A.y -= 0.1;
-    if (win.GetSpecialKeyStatus(fk_Key.LEFT)) A.x -= 0.1;
-    if (win.GetSpecialKeyStatus(fk_Key.RIGHT)) A.x += 0.1;
-    models[0].GlMoveTo(A);
-    AB.SetVertex(0, A);
-    AB.SetVertex(1, B);
-    CD.SetVertex(0, C);
-    CD.SetVertex(1, D);
+    if(win.GetKeyStatus(fk_Key.TAB))
+    {
+        fanshapeModel.LoRotateWithVec(origin, fk_Axis.X, 0.01);
+    }
+    if(win.GetKeyStatus(fk_Key.SHIFT_L))
+    {
+        fanshapeModel.LoRotateWithVec(origin, fk_Axis.Y, 0.01);
+    }
+    if(win.GetKeyStatus(fk_Key.CTRL_L))
+    {
+        fanshapeModel.LoRotateWithVec(origin, fk_Axis.Z, 0.01);
+    }
 
-    DistanceCalculation.Segment_Segment(A, B, C, D, ref P, ref Q, ref s, ref t);
-    models[4].GlMoveTo(P);
-    models[5].GlMoveTo(Q);
+    for (int i = 0; i < 3; i++) axisLines[i].AllClear();
+    axisLines[0].PushLine(origin, fanshapeModel.Vec ^ fanshapeModel.Upvec * AXISLENGTH);
+    axisLines[1].PushLine(origin, fanshapeModel.Upvec * AXISLENGTH);
+    axisLines[2].PushLine(origin, fanshapeModel.Vec * AXISLENGTH);
+
+    fanshapeBV.SyncModel(fanshapeModel);
 }
 
 /////////////////////////////////////////////////////////////////////////////////

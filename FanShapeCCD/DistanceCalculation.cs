@@ -13,7 +13,9 @@ namespace FanShapeCCD
             //直線状の点
             H = LP + V * t;
             //最短距離の計算
-            return (H - P).Dist();
+            var minVec = H - P;
+            if (minVec.IsZero()) return 0.0;
+            else return (H - P).Dist();
         }
 
         static public double Point_Segment(fk_Vector P, fk_Vector S, fk_Vector E, ref fk_Vector H, ref double t)
