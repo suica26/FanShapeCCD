@@ -26,7 +26,7 @@ axisModels[0].LineColor = new fk_Color(1.0, 0.0, 0.0);
 axisModels[1].LineColor = new fk_Color(0.0, 1.0, 0.0);
 axisModels[2].LineColor = new fk_Color(0.0, 0.0, 1.0);
 
-var fanshapeBV = new MyFanShapeBV(origin, new fk_Vector(1.0, 0.0, 0.0), new fk_Vector(0.0, 1.0, 0.0), Math.PI * 60.0 / 180.0, 10.0, 20.0, 5.0);
+var fanshapeBV = new MyFanShapeBV(origin, new fk_Vector(0.0, 1.0, 0.0), new fk_Vector(0.0, 0.0, 1.0), Math.PI * 60.0 / 180.0, 0.0, 20.0, 5.0);
 
 var fanshapeModel = new fk_Model();
 fanshapeModel.Shape = fanshapeBV.GetShape();
