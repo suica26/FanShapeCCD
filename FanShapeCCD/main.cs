@@ -9,7 +9,7 @@ WindowSetup();
 
 var model = new fk_Model();
 var obbBV = new MyOBB(new fk_Vector(), new fk_Vector(1.0, 0.0, 0.0), new fk_Vector(0.0, 1.0, 0.0), new fk_Vector(0.0, 0.0, 1.0), new fk_Vector(10.0, 10.0, 20.0));
-var fanshapeBV = new MyFanShapeBV(new fk_Vector(), new fk_Vector(1.0, 0.0, 0.0), new fk_Vector(0.0, 1.0, 0.0), Math.PI * 60.0 / 180.0, 10.0, 20.0, 5.0);
+var fanshapeBV = new MyFanShapeBV(new fk_Vector(), new fk_Vector(1.0, 0.0, 0.0), new fk_Vector(0.0, 1.0, 0.0), Math.PI * 120.0 / 180.0, 10.0, 20.0, 5.0);
 
 var block = new fk_Block(10.0, 10.0, 20.0);
 var obb = obbBV.GetShape();
@@ -19,37 +19,41 @@ model.Material = fk_Material.Yellow;
 model.DrawMode = fk_Draw.LINE;
 win.Entry(model);
 
-const int POINTNUM = 1000;
-var pointModel = new fk_Model[POINTNUM];
-var point = new fk_Point[POINTNUM];
-var pointArray = new fk_Vector[POINTNUM];
+const double ROUGHNESS = 64.0;
+const double STEP = 2.0 / ROUGHNESS;
+const double START = -1.0;
+var fanshapeModel = new fk_Model();
+var lineShape = new fk_Line();
 
-for(int i = 0; i < 10; i++)
+for (double t = START; t < 1.0; t += 2.0 / ROUGHNESS)
 {
-    double x = i * 5.0 - 22.5;
-    for(int j = 0; j < 10; j++)
+    var a = fanshapeBV.GetPoint(0.0, t, -1.0);
+    var b = fanshapeBV.GetPoint(1.0, t, -1.0);
+    var c = fanshapeBV.GetPoint(0.0, t, 1.0);
+    var d = fanshapeBV.GetPoint(1.0, t, 1.0);
+
+    lineShape.PushLine(a, b);
+    lineShape.PushLine(a, c);
+    lineShape.PushLine(b, d);
+    lineShape.PushLine(c, d);
+
+    if (t != START)
     {
-        double y = j * 5.0 - 22.5;
-        for(int k = 0; k < 10; k++)
-        {
-            double z = k * 5.0 - 22.5;
-            int num = i * 100 + j * 10 + k;
-
-            pointArray[num] = new fk_Vector(x, y, z);
-            point[num] = new fk_Point();
-            point[num].PushVertex(pointArray[num]);
-
-            pointModel[num] = new fk_Model();
-            pointModel[num].Shape = point[num];
-            pointModel[num].PointSize = 10.0;
-            win.Entry(pointModel[num]);
-        }
+        var pa = fanshapeBV.GetPoint(0.0, t - STEP, -1.0);
+        var pb = fanshapeBV.GetPoint(1.0, t - STEP, -1.0);
+        var pc = fanshapeBV.GetPoint(0.0, t - STEP, 1.0);
+        var pd = fanshapeBV.GetPoint(1.0, t - STEP, 1.0);
+        lineShape.PushLine(a, pa);
+        lineShape.PushLine(b, pb);
+        lineShape.PushLine(c, pc);
+        lineShape.PushLine(d, pd);
     }
 }
 
-int count = 0;
-var red = new fk_Color(1.0, 0.0, 0.0);
-var black = new fk_Color(0.0, 0.0, 0.0);
+fanshapeModel.Shape = lineShape;
+fanshapeModel.LineWidth = 10.0;
+fanshapeModel.LineColor = new fk_Color(1.0, 0.0, 0.0);
+win.Entry(fanshapeModel);
 
 while (win.Update() == true)
 {
@@ -68,14 +72,32 @@ while (win.Update() == true)
     obbBV.SyncModel(model);
     fanshapeBV.SyncModel(model);
 
-    for(int i = 0; i < pointArray.Length; i++)
-    {
-        if (fanshapeBV.PointInOutCheck(pointArray[i])) pointModel[i].PointColor = red;
-        else pointModel[i].PointColor = black;
-    }
+    lineShape.AllClear();
 
-    //if ((count++ / 120) % 2 == 0) model.Shape = obb;
-    //else model.Shape = block;
+    for (double t = START; t < 1.0; t += 2.0 / ROUGHNESS)
+    {
+        var a = fanshapeBV.GetPoint(0.0, t, -1.0);
+        var b = fanshapeBV.GetPoint(1.0, t, -1.0);
+        var c = fanshapeBV.GetPoint(0.0, t, 1.0);
+        var d = fanshapeBV.GetPoint(1.0, t, 1.0);
+
+        lineShape.PushLine(a, b);
+        lineShape.PushLine(a, c);
+        lineShape.PushLine(b, d);
+        lineShape.PushLine(c, d);
+
+        if (t != START)
+        {
+            var pa = fanshapeBV.GetPoint(0.0, t - STEP, -1.0);
+            var pb = fanshapeBV.GetPoint(1.0, t - STEP, -1.0);
+            var pc = fanshapeBV.GetPoint(0.0, t - STEP, 1.0);
+            var pd = fanshapeBV.GetPoint(1.0, t - STEP, 1.0);
+            lineShape.PushLine(a, pa);
+            lineShape.PushLine(b, pb);
+            lineShape.PushLine(c, pc);
+            lineShape.PushLine(d, pd);
+        }
+    }
 }
 
 /////////////////////////////////////////////////////////////////////////////////

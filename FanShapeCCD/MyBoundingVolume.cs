@@ -11,14 +11,14 @@ namespace FanShapeCCD
         public MyBoundingVolume() { position = new fk_Vector(); }
         public MyBoundingVolume(fk_Vector p) { position = new fk_Vector(p.x, p.y, p.z); }
 
-        abstract public fk_Shape GetShape();
-        virtual public void SyncModel(fk_Model argModel) 
+        public abstract fk_Shape GetShape();
+        public virtual void SyncModel(fk_Model argModel) 
         {
             var p = argModel.Position;
             position.Set(p.x, p.y, p.z);
         }
 
-        abstract public bool PointInOutCheck(fk_Vector point);
+        public abstract bool PointInOutCheck(fk_Vector point);
     }
 
     public class MySphereBV : MyBoundingVolume
@@ -32,9 +32,9 @@ namespace FanShapeCCD
         public MySphereBV() : base() { rad = 0.0; }
         public MySphereBV(fk_Vector p, double r) : base(p) { rad = r; }
 
-        override public fk_Shape GetShape() { return new fk_Sphere(8, rad); }
+        public override fk_Shape GetShape() { return new fk_Sphere(8, rad); }
 
-        override public void SyncModel(fk_Model argModel) { base.SyncModel(argModel); }
+        public override void SyncModel(fk_Model argModel) { base.SyncModel(argModel); }
 
         public override bool PointInOutCheck(fk_Vector point)
         {
@@ -58,9 +58,9 @@ namespace FanShapeCCD
             position = start + (end - start) / 2;
         }
 
-        override public fk_Shape GetShape() { return new fk_Capsule(8, (start - end).Dist(), rad); }
+        public override fk_Shape GetShape() { return new fk_Capsule(8, (start - end).Dist(), rad); }
 
-        override public void SyncModel(fk_Model argModel)
+        public override void SyncModel(fk_Model argModel)
         {
             base.SyncModel(argModel);
             double len = (end - start).Dist() / 2;
@@ -83,9 +83,9 @@ namespace FanShapeCCD
         public MyAABB() : base() { width = new fk_Vector(); }
         public MyAABB(fk_Vector p, fk_Vector w) : base(p) { width = new fk_Vector(w.x, w.y, w.z); }
 
-        override public fk_Shape GetShape() { return new fk_Block(width.x, width.x, width.z); }
+        public override fk_Shape GetShape() { return new fk_Block(width.x, width.x, width.z); }
 
-        override public void SyncModel(fk_Model argModel) { base.SyncModel(argModel); }
+        public override  void SyncModel(fk_Model argModel) { base.SyncModel(argModel); }
 
         public override bool PointInOutCheck(fk_Vector point)
         {
@@ -142,9 +142,9 @@ namespace FanShapeCCD
             SetAxis(axisX, axisY, axisZ);
         }
 
-        override public fk_Shape GetShape() { return new fk_Block(width.x, width.y, width.z); }
+        public override fk_Shape GetShape() { return new fk_Block(width.x, width.y, width.z); }
 
-        override public void SyncModel(fk_Model argModel)
+        public override  void SyncModel(fk_Model argModel)
         {
             base.SyncModel(argModel);
             SetAxis(argModel.Vec ^ argModel.Upvec, argModel.Upvec, argModel.Vec);
@@ -211,12 +211,12 @@ namespace FanShapeCCD
             height = h;
         }
 
-        override public fk_Shape GetShape()
+        public override fk_Shape GetShape()
         {
             return null;
         }
 
-        override public void SyncModel(fk_Model argModel)
+        public override void SyncModel(fk_Model argModel)
         {
             var p = argModel.Position;
             origin.Set(p.x, p.y, p.z);
@@ -253,6 +253,29 @@ namespace FanShapeCCD
             if(cosVal > pVec * center) return false;
 
             return true;
+        }
+
+        //扇形内の点を返す関数
+        //s は 0 ~ 1
+        //t は -1 ~ 1
+        //h は -1 ~ 1
+        public fk_Vector GetPoint(double s, double t, double h)
+        {
+            fk_Vector point;
+
+            double len = (lRad - sRad) * s;
+            double angle = Math.Acos(cosVal) * t;
+            double cos = Math.Cos(angle);
+            double sin = Math.Sin(angle);
+
+            //奥行き成分
+            point = center * (sRad + len);
+            //幅成分
+            point = cos * point + (1.0 - cos) * (point * upVec) * upVec + sin * (upVec ^ point);
+            //高さ成分
+            point = point + upVec * height * h;
+
+            return point;
         }
     }
 }
