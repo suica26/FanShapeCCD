@@ -7,7 +7,7 @@ fk_AppWindow win = new fk_AppWindow();
 WindowSetup();
 
 var origin = new fk_Vector();
-const double AXISLENGTH = 10.0;
+const double AXISLENGTH = 30.0;
 
 fk_Model[] axisModels = new fk_Model[3];
 fk_Line[] axisLines = new fk_Line[3];
@@ -29,25 +29,18 @@ axisModels[2].LineColor = new fk_Color(0.0, 0.0, 1.0);
 var fanshapeBV = new MyFanShapeBV(origin, new fk_Vector(0.0, 1.0, 0.0), new fk_Vector(0.0, 0.0, 1.0), Math.PI * 60.0 / 180.0, 0.0, 20.0, 5.0);
 
 var fanshapeModel = new fk_Model();
+fanshapeBV.SyncModel(fanshapeModel);
 fanshapeModel.Shape = fanshapeBV.GetShape();
 fanshapeModel.Material = fk_Material.Yellow;
 fanshapeModel.DrawMode = fk_Draw.LINE | fk_Draw.FACE;
+fanshapeModel.GlVec(new fk_Vector(0.0, 1.0, 0.0));
 win.Entry(fanshapeModel);
 
 while (win.Update() == true)
 {
-    if(win.GetKeyStatus(fk_Key.TAB))
-    {
-        fanshapeModel.LoRotateWithVec(origin, fk_Axis.X, 0.01);
-    }
-    if(win.GetKeyStatus(fk_Key.SHIFT_L))
-    {
-        fanshapeModel.LoRotateWithVec(origin, fk_Axis.Y, 0.01);
-    }
-    if(win.GetKeyStatus(fk_Key.CTRL_L))
-    {
-        fanshapeModel.LoRotateWithVec(origin, fk_Axis.Z, 0.01);
-    }
+    if(win.GetKeyStatus(fk_Key.TAB)) fanshapeModel.LoRotateWithVec(origin, fk_Axis.X, 0.01);
+    if (win.GetKeyStatus(fk_Key.SHIFT_L)) fanshapeModel.LoRotateWithVec(origin, fk_Axis.Y, 0.01);
+    if (win.GetKeyStatus(fk_Key.CTRL_L)) fanshapeModel.LoRotateWithVec(origin, fk_Axis.Z, 0.01);
 
     for (int i = 0; i < 3; i++) axisLines[i].AllClear();
     axisLines[0].PushLine(origin, fanshapeModel.Vec ^ fanshapeModel.Upvec * AXISLENGTH);

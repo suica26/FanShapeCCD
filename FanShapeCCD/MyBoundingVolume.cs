@@ -213,20 +213,16 @@ namespace FanShapeCCD
         public override fk_Shape GetShape()
         {
             const int V_NUM = 32;
-            const double ROUGHNESS = V_NUM;
 
             var ifs = new fk_IndexFaceSet();
             var pos = new fk_Vector[4 * (V_NUM + 1)];
             var IFSet = new int[4 * 4 * V_NUM + 8];
 
-            const double STEP = 2.0 / ROUGHNESS;
-            const double START = -1.0;
-
             int i, j, index;
 
             for (i = 0; i <= V_NUM; i++)
             {
-                double t = START + STEP * i;
+                double t = -1.0 + 2.0 / (double)V_NUM * (double)i;
                 pos[i * 4] = GetPoint(0.0, t, 1.0);
                 pos[i * 4 + 1] = GetPoint(0.0, t, -1.0);
                 pos[i * 4 + 2] = GetPoint(1.0, t, -1.0);
@@ -269,12 +265,15 @@ namespace FanShapeCCD
         public override void SyncModel(fk_Model argModel)
         {
             var p = argModel.Position;
-            origin.Set(p.x, p.y, p.z);
+            position.Set(p.x, p.y, p.z);
+
             var v = argModel.Vec;
             center.Set(v.x, v.y, v.z);
+
             var u = argModel.Upvec;
             upVec.Set(u.x, u.y, u.z);
-            position = origin + center * (sRad + (lRad + sRad) / 2.0);
+            
+            origin = position - center * (sRad + (lRad + sRad) / 2.0);
         }
 
         public override bool PointInOutCheck(fk_Vector point)
@@ -323,7 +322,7 @@ namespace FanShapeCCD
             //幅成分
             point = cos * point + (1.0 - cos) * (point * upVec) * upVec + sin * (upVec ^ point);
             //高さ成分
-            point = point + upVec * height * h;
+            point = point + upVec * height * h + origin;
 
             return point;
         }
