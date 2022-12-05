@@ -1,6 +1,6 @@
-﻿using FK_CLI;
+﻿using FanShapeCCD;
+using FK_CLI;
 using System;
-using FanShapeCCD;
 using System.Collections.Generic;
 
 //ウィンドウ変数
@@ -12,68 +12,26 @@ const double AXISLENGTH = 30.0;
 
 fk_Model[] axisModels = new fk_Model[3];
 fk_Line[] axisLines = new fk_Line[3];
-
-for(int i=0; i<3; i++)
-{
-    axisModels[i] = new fk_Model();
-    axisLines[i] = new fk_Line();
-    axisModels[i].Shape = axisLines[i];
-    axisModels[i].LineWidth = 1.0;
-
-    win.Entry(axisModels[i]);
-}
-
-axisModels[0].LineColor = new fk_Color(1.0, 0.0, 0.0);
-axisModels[1].LineColor = new fk_Color(0.0, 1.0, 0.0);
-axisModels[2].LineColor = new fk_Color(0.0, 0.0, 1.0);
+AxisSetup(axisModels, axisLines, win);
 
 var fanshapeBV = new MyFanShapeBV(origin, new fk_Vector(0.0, 1.0, 0.0), new fk_Vector(0.0, 0.0, 1.0), Math.PI * 120.0 / 180.0, 10.0, 20.0, 5.0);
 
 var fanshapeModel = new fk_Model();
-fanshapeBV.SyncModel(fanshapeModel);
-fanshapeModel.Shape = fanshapeBV.GetShape();
-fanshapeModel.Material = fk_Material.Yellow;
-fanshapeModel.DrawMode = fk_Draw.FACE;
-fanshapeModel.LineWidth = 10.0;
-fanshapeModel.GlVec(new fk_Vector(0.0, 1.0, 0.0));
+FanShapeSetup(fanshapeModel, fanshapeBV);
 win.Entry(fanshapeModel);
-
-
 
 var ipModel = new fk_Model();
 var opModel = new fk_Model();
 var insidePoints = new fk_Point();
 var outsidePoints = new fk_Point();
-ipModel.Shape = insidePoints;
-ipModel.PointSize = 3.0;
-ipModel.PointColor = new fk_Color(1.0, 0.0, 0.0);
-opModel.Shape = outsidePoints;
-opModel.PointSize = 3.0;
-opModel.PointColor = new fk_Color(0.0, 0.0, 1.0);
-win.Entry(opModel);
+PointsSetup(ipModel, opModel, insidePoints, outsidePoints);
+win.Entry(ipModel);
 
-var pArray = new List<fk_Vector>();
-const int NUMS = 25;
-const double RANGE = 50.0;
-const double STEP = RANGE / NUMS;
-const double START = (RANGE - STEP) / 2.0;
+var pList = new List<fk_Vector>();
+LatticeCalc(pList);
 
-for (int x = 0; x < NUMS; x++)
-{
-    double px = STEP * x - START;
-    for (int y = 0; y < NUMS; y++)
-    {
-        double py = STEP * y - START;
-        for (int z = 0; z < NUMS; z++)
-        {
-            double pz = STEP * z - START;
-            pArray.Add(new fk_Vector(px, py, pz));
-        }
-    }
-}
-
-bool dispShape = false;
-bool dispPoints = false;
+int dispShapeFlg = 1;
+int dispPointsFlg = 0;
 
 while (win.Update() == true)
 {
@@ -82,23 +40,25 @@ while (win.Update() == true)
     if (win.GetKeyStatus(fk_Key.CTRL_L)) fanshapeModel.LoRotateWithVec(origin, fk_Axis.Z, 0.01);
     if (win.GetKeyStatus(fk_Key.SPACE, fk_Switch.DOWN))
     {
-        dispShape = !dispShape;
-        if (dispShape) fanshapeModel.DrawMode = fk_Draw.LINE;
-        else fanshapeModel.DrawMode = fk_Draw.FACE;
+        dispShapeFlg++;
+        if (dispShapeFlg > 2) dispShapeFlg = 0;
+
+        if (dispShapeFlg == 0) fanshapeModel.DrawMode = fk_Draw.LINE;
+        else if(dispShapeFlg == 1) fanshapeModel.DrawMode = fk_Draw.FACE;
+        else fanshapeModel.DrawMode = fk_Draw.NONE;
     }
     if(win.GetKeyStatus(fk_Key.ENTER, fk_Switch.DOWN))
     {
-        dispPoints = !dispPoints;
-        if(dispPoints)
-        {
-            win.Entry(ipModel);
-            win.Remove(opModel);
-        }
-        else
+        dispPointsFlg++;
+        if(dispPointsFlg > 2) dispPointsFlg = 0;
+
+        if(dispPointsFlg == 0) win.Entry(ipModel);
+        else if(dispPointsFlg == 1)
         {
             win.Entry(opModel);
             win.Remove(ipModel);
         }
+        else win.Remove(opModel);
     }
 
     for (int i = 0; i < 3; i++) axisLines[i].AllClear();
@@ -111,7 +71,7 @@ while (win.Update() == true)
     insidePoints.AllClear();
     outsidePoints.AllClear();
 
-    foreach (var p in pArray)
+    foreach (var p in pList)
     {
         if (fanshapeBV.PointInOutCheck(p))
             insidePoints.PushVertex(p);
@@ -132,4 +92,63 @@ void WindowSetup()
     win.BGColor = new fk_Color(0.6, 0.7, 0.8);
     win.TrackBallMode = true;
     win.Open();
+}
+
+void AxisSetup(fk_Model[] axisModelArray, fk_Line[] axisLineArray, fk_AppWindow argWin)
+{
+    for (int i = 0; i < 3; i++)
+    {
+        axisModelArray[i] = new fk_Model();
+        axisLineArray[i] = new fk_Line();
+        axisModelArray[i].Shape = axisLineArray[i];
+        axisModelArray[i].LineWidth = 1.0;
+
+        argWin.Entry(axisModelArray[i]);
+    }
+
+    axisModelArray[0].LineColor = new fk_Color(1.0, 0.0, 0.0);
+    axisModelArray[1].LineColor = new fk_Color(0.0, 1.0, 0.0);
+    axisModelArray[2].LineColor = new fk_Color(0.0, 0.0, 1.0);
+}
+
+void FanShapeSetup(fk_Model fsModel, MyFanShapeBV fsBV)
+{
+    fsBV.SyncModel(fsModel);
+    fsModel.Shape = fsBV.GetShape();
+    fsModel.Material = fk_Material.Yellow;
+    fsModel.DrawMode = fk_Draw.FACE;
+    fsModel.LineWidth = 10.0;
+    fsModel.GlVec(new fk_Vector(0.0, 1.0, 0.0));
+}
+
+void PointsSetup(fk_Model ipm, fk_Model opm, fk_Point ip, fk_Point op)
+{
+    ipm.Shape = ip;
+    ipm.PointSize = 3.0;
+    ipm.PointColor = new fk_Color(1.0, 0.0, 0.0);
+    opm.Shape = op;
+    opm.PointSize = 3.0;
+    opm.PointColor = new fk_Color(0.0, 0.0, 1.0);
+}
+
+void LatticeCalc(List<fk_Vector> pl)
+{
+    const int NUMS = 25;
+    const double RANGE = 50.0;
+    const double STEP = RANGE / NUMS;
+    const double START = (RANGE - STEP) / 2.0;
+
+    for (int x = 0; x < NUMS; x++)
+    {
+        double px = STEP * x - START;
+        for (int y = 0; y < NUMS; y++)
+        {
+            double py = STEP * y - START;
+            for (int z = 0; z < NUMS; z++)
+            {
+                double pz = STEP * z - START;
+                pl.Add(new fk_Vector(px, py, pz));
+            }
+        }
+    }
 }
