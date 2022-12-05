@@ -33,47 +33,73 @@ var fanshapeModel = new fk_Model();
 fanshapeBV.SyncModel(fanshapeModel);
 fanshapeModel.Shape = fanshapeBV.GetShape();
 fanshapeModel.Material = fk_Material.Yellow;
-fanshapeModel.DrawMode = fk_Draw.LINE | fk_Draw.FACE;
+fanshapeModel.DrawMode = fk_Draw.FACE;
 fanshapeModel.LineWidth = 10.0;
 fanshapeModel.GlVec(new fk_Vector(0.0, 1.0, 0.0));
 win.Entry(fanshapeModel);
 
 
 
-var pModel = new fk_Model();
-var points = new fk_Point();
-pModel.Shape = points;
-pModel.PointSize = 3.0;
-pModel.PointColor = new fk_Color(1.0, 0.0, 0.0);
-win.Entry(pModel);
+var ipModel = new fk_Model();
+var opModel = new fk_Model();
+var insidePoints = new fk_Point();
+var outsidePoints = new fk_Point();
+ipModel.Shape = insidePoints;
+ipModel.PointSize = 3.0;
+ipModel.PointColor = new fk_Color(1.0, 0.0, 0.0);
+opModel.Shape = outsidePoints;
+opModel.PointSize = 3.0;
+opModel.PointColor = new fk_Color(0.0, 0.0, 1.0);
+win.Entry(opModel);
 
 var pArray = new List<fk_Vector>();
-int length = 25;
-double range = 50.0;
-double step = range / length;
-double start = (range - step) / 2.0;
+const int NUMS = 25;
+const double RANGE = 50.0;
+const double STEP = RANGE / NUMS;
+const double START = (RANGE - STEP) / 2.0;
 
-for (int x = 0; x < length; x++)
+for (int x = 0; x < NUMS; x++)
 {
-    double px = step * x - start;
-    for (int y = 0; y < length; y++)
+    double px = STEP * x - START;
+    for (int y = 0; y < NUMS; y++)
     {
-        double py = step * y - start;
-        for (int z = 0; z < length; z++)
+        double py = STEP * y - START;
+        for (int z = 0; z < NUMS; z++)
         {
-            double pz = step * z - start;
+            double pz = STEP * z - START;
             pArray.Add(new fk_Vector(px, py, pz));
         }
     }
 }
+
+bool dispShape = false;
+bool dispPoints = false;
 
 while (win.Update() == true)
 {
     if(win.GetKeyStatus(fk_Key.TAB)) fanshapeModel.LoRotateWithVec(origin, fk_Axis.X, 0.01);
     if (win.GetKeyStatus(fk_Key.SHIFT_L)) fanshapeModel.LoRotateWithVec(origin, fk_Axis.Y, 0.01);
     if (win.GetKeyStatus(fk_Key.CTRL_L)) fanshapeModel.LoRotateWithVec(origin, fk_Axis.Z, 0.01);
-    if (win.GetKeyStatus(fk_Key.SPACE)) fanshapeModel.DrawMode = fk_Draw.LINE;
-    else fanshapeModel.DrawMode = fk_Draw.FACE;
+    if (win.GetKeyStatus(fk_Key.SPACE, fk_Switch.DOWN))
+    {
+        dispShape = !dispShape;
+        if (dispShape) fanshapeModel.DrawMode = fk_Draw.LINE;
+        else fanshapeModel.DrawMode = fk_Draw.FACE;
+    }
+    if(win.GetKeyStatus(fk_Key.ENTER, fk_Switch.DOWN))
+    {
+        dispPoints = !dispPoints;
+        if(dispPoints)
+        {
+            win.Entry(ipModel);
+            win.Remove(opModel);
+        }
+        else
+        {
+            win.Entry(opModel);
+            win.Remove(ipModel);
+        }
+    }
 
     for (int i = 0; i < 3; i++) axisLines[i].AllClear();
     axisLines[0].PushLine(origin, fanshapeModel.Vec ^ fanshapeModel.Upvec * AXISLENGTH);
@@ -82,11 +108,14 @@ while (win.Update() == true)
 
     fanshapeBV.SyncModel(fanshapeModel);
 
-    points.AllClear();
+    insidePoints.AllClear();
+    outsidePoints.AllClear();
+
     foreach (var p in pArray)
     {
         if (fanshapeBV.PointInOutCheck(p))
-            points.PushVertex(p);
+            insidePoints.PushVertex(p);
+        else outsidePoints.PushVertex(p);
     }
 }
 
