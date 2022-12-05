@@ -265,7 +265,7 @@ namespace FanShapeCCD
         public override void SyncModel(fk_Model argModel)
         {
             var p = argModel.Position;
-            position.Set(p.x, p.y, p.z);
+            origin.Set(p.x, p.y, p.z);
 
             var v = argModel.Vec;
             center.Set(v.x, v.y, v.z);
@@ -273,7 +273,7 @@ namespace FanShapeCCD
             var u = argModel.Upvec;
             upVec.Set(u.x, u.y, u.z);
             
-            origin = position - center * (sRad + (lRad + sRad) / 2.0);
+            position = center * (sRad + (lRad + sRad) / 2.0);
         }
 
         public override bool PointInOutCheck(fk_Vector point)
@@ -288,8 +288,8 @@ namespace FanShapeCCD
                 pVec = p - origin;
                 double planeDist = upVec * pVec;
                 if (Math.Abs(planeDist) > height) return false;
-                //扇形内部にあるなら、点Pを平面に投影
-                else p += upVec * planeDist;
+                //厚み平面の内部にあるなら、点Pを平面に投影
+                else p += upVec * -planeDist;
             }
 
             //二次元判定
@@ -322,7 +322,7 @@ namespace FanShapeCCD
             //幅成分
             point = cos * point + (1.0 - cos) * (point * upVec) * upVec + sin * (upVec ^ point);
             //高さ成分
-            point = point + upVec * height * h + origin;
+            point = point + upVec * height * h;
 
             return point;
         }
