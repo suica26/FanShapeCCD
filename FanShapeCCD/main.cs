@@ -38,6 +38,10 @@ while (win.Update() == true)
     if(win.GetKeyStatus(fk_Key.TAB)) fanshapeModel.LoRotateWithVec(origin, fk_Axis.X, 0.01);
     if (win.GetKeyStatus(fk_Key.SHIFT_L)) fanshapeModel.LoRotateWithVec(origin, fk_Axis.Y, 0.01);
     if (win.GetKeyStatus(fk_Key.CTRL_L)) fanshapeModel.LoRotateWithVec(origin, fk_Axis.Z, 0.01);
+    if (win.GetKeyStatus(fk_Key.UP)) fanshapeModel.LoTranslate(0.0, 0.0, 0.1);
+    if (win.GetKeyStatus(fk_Key.DOWN)) fanshapeModel.LoTranslate(0.0, 0.0, -0.1);
+    if (win.GetKeyStatus(fk_Key.RIGHT)) fanshapeModel.LoTranslate(0.1, 0.0, 0.0);
+    if (win.GetKeyStatus(fk_Key.LEFT)) fanshapeModel.LoTranslate(-0.1, 0.0, 0.0);
     if (win.GetKeyStatus(fk_Key.SPACE, fk_Switch.DOWN))
     {
         dispShapeFlg++;
@@ -62,9 +66,10 @@ while (win.Update() == true)
     }
 
     for (int i = 0; i < 3; i++) axisLines[i].AllClear();
-    axisLines[0].PushLine(origin, fanshapeModel.Vec ^ fanshapeModel.Upvec * AXISLENGTH);
-    axisLines[1].PushLine(origin, fanshapeModel.Upvec * AXISLENGTH);
-    axisLines[2].PushLine(origin, fanshapeModel.Vec * AXISLENGTH);
+    var pos = fanshapeModel.Position;
+    axisLines[0].PushLine(pos, pos + (fanshapeModel.Vec ^ fanshapeModel.Upvec) * AXISLENGTH);
+    axisLines[1].PushLine(pos, pos + fanshapeModel.Upvec * AXISLENGTH);
+    axisLines[2].PushLine(pos, pos + fanshapeModel.Vec * AXISLENGTH);
 
     fanshapeBV.SyncModel(fanshapeModel);
 
@@ -87,7 +92,7 @@ void WindowSetup()
 {
     win.CameraPos = new fk_Vector(0.0, 0.0, 100.0);
     win.CameraFocus = new fk_Vector(0.0, 0.0, 0.0);
-    win.Size = new fk_Dimension(1000, 800);
+    win.Size = new fk_Dimension(1000, 600);
     //win.ShowGuide(fk_Guide.GRID_XY);
     win.BGColor = new fk_Color(0.6, 0.7, 0.8);
     win.TrackBallMode = true;
