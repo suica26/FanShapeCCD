@@ -1,6 +1,6 @@
 ﻿using FK_CLI;
 
-namespace FanShapeCCD.BoundingVolume
+namespace FanShapeCCD
 {
     public class MyCapsuleBV : MyBoundingVolume
     {

@@ -13,6 +13,7 @@ namespace FanShapeCCD
                 double sumRad = sphere1.rad + sphere2.rad;
 
                 if (dist > sumRad) return false;
+
                 return true;
             }
 
