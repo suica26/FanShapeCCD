@@ -26,11 +26,29 @@ namespace FanShapeCCD
             end = position - argModel.Vec * len;
         }
 
-        public override bool PointInOutCheck(fk_Vector point)
+        public override bool PointInOutCheck(fk_Vector P)
         {
-            double dist = DistanceCalculation.Point_Segment(point, start, end);
+            double dist = DistanceCalculation.Point_Segment(P, start, end);
             if (dist > rad) return false;
             return true;
+        }
+
+        public override fk_Vector Support(fk_Vector D)
+        {
+            var d = new fk_Vector(D.x, D.y, D.z);
+            d.Normalize();
+
+            //始点と終点の円のサポート点を計算
+            var sD = start + d * rad;
+            var eD = end + d * rad;
+
+            //内積から、どちらのほうがD方向に遠いか判定
+            double sDot = (sD - position) * d;
+            double eDot = (eD - position) * d;
+
+            if (sDot > eDot) return sD;
+            else if (sDot == eDot) return (sD + eD) / 2; //もし、D方向が線分の垂直方向なら、2点の中点を出力
+            else return eD;
         }
     }
 }

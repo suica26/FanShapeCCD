@@ -1,41 +1,42 @@
-﻿using FanShapeCCD;
-using FK_CLI;
+﻿using FK_CLI;
 using System;
 using System.Collections.Generic;
+using FanShapeCCD;
 
-//ウィンドウ変数
+//変数宣言
 fk_AppWindow win = new fk_AppWindow();
-WindowSetup();
-
 var origin = new fk_Vector();
 var fanshapeBV = new MyFanShapeBV(origin, new fk_Vector(0.0, 1.0, 0.0), new fk_Vector(0.0, 0.0, 1.0), Math.PI * 120.0 / 180.0, 10.0, 20.0, 5.0);
-
 var fanshapeModel = new fk_Model();
-FanShapeSetup(fanshapeModel, fanshapeBV);
-win.Entry(fanshapeModel);
-
 var ipModel = new fk_Model();
 var opModel = new fk_Model();
 var insidePoints = new fk_Point();
 var outsidePoints = new fk_Point();
-PointsSetup(ipModel, opModel, insidePoints, outsidePoints);
-win.Entry(ipModel);
-
 var pList = new List<fk_Vector>();
-LatticeCalc(pList);
-
 int dispShapeFlg = 1;
 int dispPointsFlg = 0;
 
+WindowSetup();
+
+FanShapeSetup(fanshapeModel, fanshapeBV);
+win.Entry(fanshapeModel);
+
+PointsSetup(ipModel, opModel, insidePoints, outsidePoints);
+win.Entry(ipModel);
+
+LatticeCalc(pList);
+
 while (win.Update() == true)
 {
+    //モデルの移動・回転
     if (win.GetKeyStatus(fk_Key.TAB)) fanshapeModel.LoRotateWithVec(origin, fk_Axis.X, 0.01);
     if (win.GetKeyStatus(fk_Key.SHIFT_L)) fanshapeModel.LoRotateWithVec(origin, fk_Axis.Y, 0.01);
     if (win.GetKeyStatus(fk_Key.CTRL_L)) fanshapeModel.LoRotateWithVec(origin, fk_Axis.Z, 0.01);
-    if (win.GetKeyStatus(fk_Key.UP)) fanshapeModel.LoTranslate(0.0, 0.0, 0.1);
-    if (win.GetKeyStatus(fk_Key.DOWN)) fanshapeModel.LoTranslate(0.0, 0.0, -0.1);
+    if (win.GetKeyStatus(fk_Key.UP)) fanshapeModel.LoTranslate(0.0, 0.0, -0.1);
+    if (win.GetKeyStatus(fk_Key.DOWN)) fanshapeModel.LoTranslate(0.0, 0.0, 0.1);
     if (win.GetKeyStatus(fk_Key.RIGHT)) fanshapeModel.LoTranslate(0.1, 0.0, 0.0);
     if (win.GetKeyStatus(fk_Key.LEFT)) fanshapeModel.LoTranslate(-0.1, 0.0, 0.0);
+    //描画方法の変更
     if (win.GetKeyStatus(fk_Key.SPACE, fk_Switch.DOWN))
     {
         dispShapeFlg++;

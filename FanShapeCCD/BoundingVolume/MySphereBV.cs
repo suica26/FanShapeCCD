@@ -18,11 +18,18 @@ namespace FanShapeCCD
 
         public override void SyncModel(fk_Model argModel) { base.SyncModel(argModel); }
 
-        public override bool PointInOutCheck(fk_Vector point)
+        public override bool PointInOutCheck(fk_Vector P)
         {
-            double dist = (position - point).Dist();
+            double dist = (position - P).Dist();
             if (dist > rad) return false;
             return true;
+        }
+
+        public override fk_Vector Support(fk_Vector D)
+        {
+            var d = new fk_Vector(D.x, D.y, D.z);
+            d.Normalize();
+            return d * rad;
         }
     }
 }
