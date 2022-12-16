@@ -6,7 +6,7 @@ namespace FanShapeCCD
     public class MyOBB : MyBoundingVolume
     {
         public fk_Vector width;
-        protected fk_Vector[] localAxis;
+        public fk_Vector[] localAxis;
 
         public MyOBB() : base()
         {
@@ -35,13 +35,34 @@ namespace FanShapeCCD
             SetAxis(argModel.Vec ^ argModel.Upvec, argModel.Upvec, argModel.Vec);
         }
 
-        public override bool PointInOutCheck(fk_Vector point)
+        public override bool PointInOutCheck(fk_Vector P)
         {
-            fk_Vector pVec = point - position;
-            if (Math.Abs(GetAxis(fk_Axis.X) * pVec) > width.x / 2.0) return false;
-            if (Math.Abs(GetAxis(fk_Axis.Y) * pVec) > width.y / 2.0) return false;
-            if (Math.Abs(GetAxis(fk_Axis.Z) * pVec) > width.z / 2.0) return false;
+            fk_Vector pVec = P - position;
+            if (Math.Abs(localAxis[0] * pVec) > width.x / 2.0) return false;
+            if (Math.Abs(localAxis[1] * pVec) > width.y / 2.0) return false;
+            if (Math.Abs(localAxis[2] * pVec) > width.z / 2.0) return false;
             return true;
+        }
+
+        public override fk_Vector Support(fk_Vector D)
+        {
+            var d = new fk_Vector(D.x, D.y, D.z);
+            d.Normalize();
+
+            var verticies = GetVertex();
+            double max = d * verticies[0];
+            var point = verticies[0];
+            
+            for(int i = 1; i < verticies.Length; i++)
+            {
+                if(d * verticies[i] > max)
+                {
+                    max = d * verticies[i];
+                    point = verticies[i];
+                }
+            }
+
+            return point;
         }
 
         public fk_Vector GetAxis(fk_Axis axis)
@@ -69,6 +90,25 @@ namespace FanShapeCCD
 
             for (int i = 0; i < 3; i++)
                 if (!localAxis[i].Normalize()) Console.WriteLine($"Zero Vector is set to OBB's Axis{i}");
+        }
+
+        public fk_Vector[] GetVertex()
+        {
+            var vertices = new fk_Vector[8];
+            var xVec = localAxis[0] * width.x;
+            var yVec = localAxis[1] * width.y;
+            var zVec = localAxis[2] * width.z;
+
+            vertices[0] = position + xVec + yVec + zVec;
+            vertices[1] = position - xVec + yVec + zVec;
+            vertices[2] = position - xVec + yVec - zVec;
+            vertices[3] = position + xVec + yVec - zVec;
+            vertices[4] = position + xVec - yVec + zVec;
+            vertices[5] = position - xVec - yVec + zVec;
+            vertices[6] = position - xVec - yVec - zVec;
+            vertices[7] = position + xVec - yVec - zVec;
+
+            return vertices;
         }
     }
 }

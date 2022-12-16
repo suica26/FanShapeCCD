@@ -17,6 +17,8 @@ namespace FanShapeCCD
             position.Set(p.x, p.y, p.z);
         }
 
-        public abstract bool PointInOutCheck(fk_Vector point);
+        public abstract bool PointInOutCheck(fk_Vector P);
+
+        public abstract fk_Vector Support(fk_Vector D);
     }
 }

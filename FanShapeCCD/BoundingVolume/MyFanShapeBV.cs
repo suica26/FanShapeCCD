@@ -90,9 +90,9 @@ namespace FanShapeCCD
             upVec.Set(u.x, u.y, u.z);
         }
 
-        public override bool PointInOutCheck(fk_Vector point)
+        public override bool PointInOutCheck(fk_Vector P)
         {
-            var p = new fk_Vector(point.x, point.y, point.z);
+            var p = new fk_Vector(P.x, P.y, P.z);
             fk_Vector pVec;
 
             //三次元の判定
@@ -116,6 +116,12 @@ namespace FanShapeCCD
             if (cosVal > pVec * center) return false;
 
             return true;
+        }
+
+        public override fk_Vector Support(fk_Vector D)
+        {
+            Console.WriteLine("FanShape's Support Function is not implmented.");
+            return null;
         }
 
         //扇形内の点を返す関数
